@@ -1,0 +1,30 @@
+# Node.js / Next.js
+node_modules/
+.next/
+npm-debug.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Hardhat
+artifacts/
+cache/
+typechain/
+
+# Docker
+*.env
+docker-compose.override.yml
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project-specific
+.env
+.env.*
