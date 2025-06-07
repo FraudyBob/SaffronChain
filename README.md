@@ -39,7 +39,7 @@ DevSecOps_Blockchain_App/
 ## 🚀 Cài đặt nhanh (Dev local)
 
 ```bash
-cp .env.example .env   # Rồi điền INFURA, PRIVATE_KEY, CONTRACT_ADDRESS
+cp .env.example .env   # Rồi điền INFURA_API_KEY lấy từ https://infura.io, PRIVATE_KEY lấy từ MetaMask, CONTRACT_ADDRESS
 npm install            # Cài Hardhat, dependencies
 npx hardhat compile    # Compile smart contract
 ```

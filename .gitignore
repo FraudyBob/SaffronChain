@@ -2,12 +2,12 @@
 node_modules/
 .next/
 npm-debug.log
-
+package-lock.json
 # Python
 __pycache__/
 *.pyc
 .venv/
-venv/
+
 
 # Hardhat
 artifacts/
@@ -27,4 +27,5 @@ Thumbs.db
 
 # Project-specific
 .env
-.env.*
+*.txt
+
