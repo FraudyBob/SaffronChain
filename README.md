@@ -19,43 +19,43 @@ Dự án xây dựng hệ thống xác thực nguồn gốc sản phẩm sử d�
 ```
 
 📦 DevSecOps_Blockchain_App
-├─ backend
-│  ├─ Dockerfile
-│  ├─ main.py
-│  └─ requirements.txt
-├─ contracts
-│  └─ ProductRegistry.so
-├─ frontend
-│  ├─ components
-│  │  └─ QRCodeDisplay.js
-│  ├─ pages
-│  │  ├─ consumers
-│  │  │  └─ index.js
-│  │  ├─ seller
-│  │  │  └─ index.js
-│  │  ├─ producer
-│  │  │  └─ index.js
-│  │  ├─ _app.js
-│  │  ├─ login.js
-│  │  ├─ index.js
-│  │  ├─ admin.js
-│  │  └─ register.js
-│  ├─ styles
-│  │  └─ global.css
-│  ├─ utils
-│  │  └─ auths.js
-│  ├─ Dockerfile
-│  ├─ package-lock.json
-│  └─ package.json
-├─ scripts
-│  └─ deploy.js
-├─ .env
-├─ .gitignore
-├─ hardhat.config.js
-├─ package-lock.json
-├─ package.json
-├─ docker-compose.yml
-└─ README.md
+    ├─ backend
+    │  ├─ Dockerfile
+    │  ├─ main.py
+    │  └─ requirements.txt
+    ├─ contracts
+    │  └─ ProductRegistry.so
+    ├─ frontend
+    │  ├─ components
+    │  │  └─ QRCodeDisplay.js
+    │  ├─ pages
+    │  │  ├─ consumers
+    │  │  │  └─ index.js
+    │  │  ├─ seller
+    │  │  │  └─ index.js
+    │  │  ├─ producer   
+    │  │  │  └─ index.js
+    │  │  ├─ _app.js
+    │  │  ├─ login.js
+    │  │  ├─ index.js
+    │  │  ├─ admin.js
+    │  │  └─ register.js
+    │  ├─ styles
+    │  │  └─ global.css
+    │  ├─ utils
+    │  │  └─ auths.js
+    │  ├─ Dockerfile
+    │  ├─ package-lock.json
+    │  └─ package.json
+    ├─ scripts
+    │  └─ deploy.js
+    ├─ .env
+    ├─ .gitignore
+    ├─ hardhat.config.js
+    ├─ package-lock.json
+    ├─ package.json
+    ├─ docker-compose.yml
+    └─ README.md
 
 ````
 
