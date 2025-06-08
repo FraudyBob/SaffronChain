@@ -6,58 +6,33 @@ Dự án xây dựng hệ thống xác thực nguồn gốc sản phẩm sử d�
 
 ## 🔧 Tính năng chính
 
-- ✨ Đăng ký sản phẩm lên blockchain
-- ✅ Xác minh sản phẩm thông qua mã SP
-- 📈 Cập nhật trạng thái (Vận chuyển, giao hàng, ...)
-- 💼 Sinh mã QR truy vết theo chuỗi khối
-- ⛏️ Docker hoá backend & frontend sẵn sàng CI/CD
+* ✨ Đăng ký sản phẩm lên blockchain
+* ✅ Xác minh sản phẩm thông qua mã SP
+* 📈 Cập nhật trạng thái (Vận chuyển, giao hàng, ...)
+* 💼 Sinh mã QR truy vết theo chuỗi khối
+* ⛏️ Docker hoá backend & frontend sẵn sàng CI/CD
 
 ## 📁 Cấu trúc thư mục
 
 ```
-
+DevSecOps_Blockchain_App/
+├── contracts/              # Smart contract
+│   └── ProductRegistry.sol
+├── scripts/                # Script deploy
+│   └── deploy.js
+├── backend/                # FastAPI API server
+│   ├── main.py
+│   ├── Dockerfile
+│   └── requirements.txt
+├── frontend/               # Next.js app
+│   ├── pages/
+│   ├── components/
+│   └── Dockerfile
+├── docker-compose.yml      # Compose orchestration
+├── hardhat.config.js       # Hardhat config
+├── .env.example            # Biến môi trường mẫu
+└── README.md
 ```
-
-📦 DevSecOps_Blockchain_App
-    ├─ backend
-    │  ├─ Dockerfile
-    │  ├─ main.py
-    │  └─ requirements.txt
-    ├─ contracts
-    │  └─ ProductRegistry.so
-    ├─ frontend
-    │  ├─ components
-    │  │  └─ QRCodeDisplay.js
-    │  ├─ pages
-    │  │  ├─ consumers
-    │  │  │  └─ index.js
-    │  │  ├─ seller
-    │  │  │  └─ index.js
-    │  │  ├─ producer   
-    │  │  │  └─ index.js
-    │  │  ├─ _app.js
-    │  │  ├─ login.js
-    │  │  ├─ index.js
-    │  │  ├─ admin.js
-    │  │  └─ register.js
-    │  ├─ styles
-    │  │  └─ global.css
-    │  ├─ utils
-    │  │  └─ auths.js
-    │  ├─ Dockerfile
-    │  ├─ package-lock.json
-    │  └─ package.json
-    ├─ scripts
-    │  └─ deploy.js
-    ├─ .env
-    ├─ .gitignore
-    ├─ hardhat.config.js
-    ├─ package-lock.json
-    ├─ package.json
-    ├─ docker-compose.yml
-    └─ README.md
-
-````
 
 ---
 
@@ -67,7 +42,7 @@ Dự án xây dựng hệ thống xác thực nguồn gốc sản phẩm sử d�
 cp .env.example .env   # Rồi điền INFURA_API_KEY lấy từ https://infura.io, PRIVATE_KEY lấy từ MetaMask, CONTRACT_ADDRESS
 npm install            # Cài Hardhat, dependencies
 npx hardhat compile    # Compile smart contract
-````
+```
 
 ## 🚀 Deploy contract lên Sepolia
 
@@ -89,8 +64,8 @@ CONTRACT_ADDRESS=0x...
 docker-compose up --build
 ```
 
-- [http://localhost:3000](http://localhost:3000) → Giao diện Next.js
-- [http://localhost:8000/docs](http://localhost:8000/docs) → Swagger FastAPI
+* [http://localhost:3000](http://localhost:3000) → Giao diện Next.js
+* [http://localhost:8000/docs](http://localhost:8000/docs) → Swagger FastAPI
 
 ---
 
@@ -128,13 +103,13 @@ Test ngay trên giao diện swagger UI.
 ## 🚀 Triển khai thực tế
 
 Kết hợp với repo DevSecOps CI/CD:
-[https://github.com/Giabaoday/DevSecOps_Project](https://github.com/Giabaoday/DevSecOps_Project)
+[https://github.com/Giabaoday/DevSecOps\_Project](https://github.com/Giabaoday/DevSecOps_Project)
 
 Triển khai:
 
-- Docker build backend/frontend
-- Push image lên registry
-- Dùng Jenkins/Jenkinsfile hoặc GitHub Actions tự động hoá
+* Docker build backend/frontend
+* Push image lên registry
+* Dùng Jenkins/Jenkinsfile hoặc GitHub Actions tự động hoá
 
 ---
 
@@ -168,3 +143,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
