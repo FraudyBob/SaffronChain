@@ -28,4 +28,5 @@ Thumbs.db
 # Project-specific
 .env
 *.txt
+DevSecOps_Blockchain_App.code-workspace
 
