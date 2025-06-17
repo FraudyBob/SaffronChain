@@ -111,7 +111,7 @@ Steps:
 
 ## 👤 Authors
 
-Contributors: 
+Contributors:   
 **Nguyen Dang Binh Minh - 22520871**  
 **Tran Gia Bao - 22520120**  
 Project: *DevSecOps Blockchain App (NT548)*
