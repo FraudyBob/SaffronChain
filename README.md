@@ -1,56 +1,52 @@
-# 📦 DevSecOps Blockchain App – Xác Thực Nguồn Gốc Sản Phẩm
+# 📦 DevSecOps Blockchain App – Product Provenance Verification
 
-## 🧱 Mô tả
+## 🧱 Description
 
-Dự án xây dựng hệ thống xác thực nguồn gốc sản phẩm sử dụng Blockchain Ethereum testnet (Sepolia). Hệ thống áp dụng kiến trúc microservice và DevSecOps để dễ dàng triển khai CI/CD, tích hợp an ninh.
+This project builds a blockchain-based system for verifying product provenance using Ethereum testnet (Sepolia). It follows a microservices architecture and applies DevSecOps practices to enable secure, automated CI/CD deployment.
 
-## 🔧 Tính năng chính
+## 🔧 Key Features
 
-* ✨ Đăng ký sản phẩm lên blockchain
-* ✅ Xác minh sản phẩm thông qua mã SP
-* 📈 Cập nhật trạng thái (Vận chuyển, giao hàng, ...)
-* 💼 Sinh mã QR truy vết theo chuỗi khối
-* ⛏️ Docker hoá backend & frontend sẵn sàng CI/CD
+* ✨ Register products on the blockchain  
+* ✅ Verify products via product code  
+* 📈 Track status (Shipping, Delivery, etc.)  
+* 💼 Generate traceable QR codes on-chain  
+* ⛏️ Dockerized backend & frontend ready for CI/CD integration
 
-## 📁 Cấu trúc thư mục
+## 📁 Project Structure
 
 ```
 DevSecOps_Blockchain_App/
-├── contracts/              # Smart contract
-│   └── ProductRegistry.sol
-├── scripts/                # Script deploy
-│   └── deploy.js
-├── backend/                # FastAPI API server
-│   ├── main.py
-│   ├── Dockerfile
-│   └── requirements.txt
-├── frontend/               # Next.js app
-│   ├── pages/
-│   ├── components/
-│   └── Dockerfile
-├── docker-compose.yml      # Compose orchestration
-├── hardhat.config.js       # Hardhat config
-├── .env.example            # Biến môi trường mẫu
+├── contracts/ # Smart contracts
+│ └── ProductRegistry.sol
+├── scripts/ # Deployment scripts
+│ └── deploy.js
+├── backend/ # FastAPI backend API
+│ ├── main.py
+│ ├── Dockerfile
+│ └── requirements.txt
+├── docker-compose.yml # Orchestration with Docker Compose
+├── hardhat.config.js # Hardhat configuration
+├── .env.example # Sample environment variables
 └── README.md
 ```
 
 ---
 
-## 🚀 Cài đặt nhanh (Dev local)
+## 🚀 Quick setting (Dev local)
 
 ```bash
-cp .env.example .env   # Rồi điền INFURA_API_KEY lấy từ https://infura.io, PRIVATE_KEY lấy từ MetaMask, CONTRACT_ADDRESS
-npm install            # Cài Hardhat, dependencies
-npx hardhat compile    # Compile smart contract
+cp .env.example .env   # Then fill in INFURA_API_KEY, PRIVATE_KEY, CONTRACT_ADDRESS
+npm install            # Install Hardhat and dependencies
+npx hardhat compile    # Compile smart contracts
 ```
 
-## 🚀 Deploy contract lên Sepolia
+## 🚀 Deploy Smart Contract to Sepolia
 
 ```bash
 npx hardhat run scripts/deploy.js --network sepolia
 ```
 
-Copy địa chỉ contract vào file `.env`:
+Copy contract address to file `.env`:
 
 ```
 CONTRACT_ADDRESS=0x...
@@ -58,18 +54,18 @@ CONTRACT_ADDRESS=0x...
 
 ---
 
-## 💡 Chạy với Docker Compose
+## 💡 Run with Docker Compose
 
 ```bash
 docker-compose up --build
 ```
 
-* [http://localhost:3000](http://localhost:3000) → Giao diện Next.js
+* [http://localhost:3000](http://localhost:3000) → Frontend Next.js
 * [http://localhost:8000/docs](http://localhost:8000/docs) → Swagger FastAPI
 
 ---
 
-## 🔐 Biến môi trường `.env`
+## 🔐 Environment Variables `.env`
 
 ```env
 INFURA_API_KEY=your_infura_id
@@ -79,44 +75,46 @@ CONTRACT_ADDRESS=deployed_address
 
 ---
 
-## 🧠 Sơ đồ hoạt động
+## 🧠 Workflow Overview
 
-1. Giao diện Next.js gửi request đến backend FastAPI
-2. FastAPI sử dụng Web3.py kết nối Ethereum Sepolia
-3. Smart contract lưu trữ thông tin sản phẩm
-4. Giao diện truy xuất blockchain qua API và hiển thị QR
+1. Next.js Frontend send API request to the backend FastAPI
+2. FastAPI connecting Ethereum Sepolia using Web3.py
+3. Product information is stored on the blockchain via SmartContract
+4. Frontend fetches on-chain data via API and renders QR codes
 
 ---
 
-## 🧪 Kiểm thử API (Swagger)
+## 🧪 API Testing (Swagger)
 
-Truy cập:
+Open:
 
 ```
 http://localhost:8000/docs
 ```
 
-Test ngay trên giao diện swagger UI.
+Test on swagger UI frontend.
 
 ---
 
-## 🚀 Triển khai thực tế
+## 🚀 Production Deployment
 
-Kết hợp với repo DevSecOps CI/CD:
+Integrated with DevSecOps CI/CD repository:
 [https://github.com/Giabaoday/DevSecOps\_Project](https://github.com/Giabaoday/DevSecOps_Project)
 
-Triển khai:
+Steps:
 
 * Docker build backend/frontend
-* Push image lên registry
-* Dùng Jenkins/Jenkinsfile hoặc GitHub Actions tự động hoá
+* Push image to container registry
+* Automate CI/CD using Jenkins or Github Actions
 
 ---
 
-## 👤 Tác giả
+## 👤 Authors
 
-Người thực hiện: Nguyen Dang Binh Minh - 22520871 | Tran Gia Bao - 22520120 \
-Project: DevSecOps Blockchain App (NT548)
+Contributors: 
+**Nguyen Dang Binh Minh - 22520871** 
+**Tran Gia Bao - 22520120** 
+Project: *DevSecOps Blockchain App (NT548)*
 
 ---
 
