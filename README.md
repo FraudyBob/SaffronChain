@@ -289,24 +289,11 @@ npm run dev
 - **Error Tracking**: Comprehensive error handling
 - **Performance**: Response time monitoring
 
-## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/new-feature`
-3. Commit changes: `git commit -am 'Add new feature'`
-4. Push to branch: `git push origin feature/new-feature`
-5. Submit a Pull Request
 
-## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👥 Authors
-
-- **Nguyen Dang Binh Minh** - 22520871
-- **Tran Gia Bao** - 22520120
-
-**Project**: DevSecOps Blockchain App (NT548)
+**Project**: DevSecOps Blockchain App 
 
 ## 🙏 Acknowledgments
 
@@ -318,5 +305,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ for secure, transparent supply chain management**
+
 
