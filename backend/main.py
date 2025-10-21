@@ -40,7 +40,7 @@ private_key = os.getenv("PRIVATE_KEY")
 account = w3.eth.account.from_key(private_key)
 
 contract_address = os.getenv("CONTRACT_ADDRESS")
-with open("artifacts/contracts/ProductRegistry.sol/ProductRegistry.json") as f:
+with open("../artifacts/contracts/ProductRegistry.sol/ProductRegistry.json") as f:
     abi = json.load(f)["abi"]
 
 contract = w3.eth.contract(address=contract_address, abi=abi)
@@ -94,12 +94,22 @@ class ProductRegistration(BaseModel):
     turmeric_origin: str = Field(..., description="Turmeric origin location")
     harvest_date: int = Field(..., description="Harvest date as Unix timestamp")
 
+class SpiceProduct(BaseModel):
+    product_id: str = Field(..., description="Unique product identifier")
+    name: str = Field(..., description="Product name")
+    batch: str = Field(..., description="Batch number")
+    manufacturer: str = Field(..., description="Manufacturer name")
+    turmeric_origin: str = Field(..., description="Turmeric origin location")
+    harvest_date: int = Field(..., description="Harvest date as Unix timestamp")
+
 class ProductResponse(BaseModel):
     name: str
     batch: str
     manufacturer: str
     status: str
     timestamp: int
+    turmeric_origin: str
+    harvest_date: int
 
 class UpdateStatusRequest(BaseModel):
     product_id: str = Field(..., description="Product ID to update")
@@ -172,7 +182,9 @@ def verify_product(product_id: str, user=Depends(get_current_user)):
             batch=product[1],
             manufacturer=product[2],
             status=product[3],
-            timestamp=product[4]
+            timestamp=product[4],
+            turmeric_origin=product[5],
+            harvest_date=product[6]
         )
     except Exception as e:
         logger.error(f"Error verifying product {product_id}: {str(e)}")
@@ -286,14 +298,84 @@ def generate_qr(request: QRCodeRequest, user=Depends(get_current_user)):
         logger.error(f"Error generating QR code: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/products")
+@app.post("/add-spice")
+def add_spice(product: SpiceProduct, user=Depends(get_current_user)):
+    """Add spice product with turmeric focus"""
+    try:
+        logger.info(f"Adding spice product: {product.product_id} by user: {user['username']}")
+        nonce = w3.eth.get_transaction_count(account.address)
+        txn = contract.functions.registerProduct(
+            product.product_id, 
+            product.name, 
+            product.batch, 
+            product.manufacturer,
+            product.turmeric_origin,
+            product.harvest_date
+        ).build_transaction({
+            'chainId': 11155111,
+            'gas': 300000,
+            'gasPrice': w3.eth.gas_price,
+            'nonce': nonce
+        })
+
+        signed_txn = w3.eth.account.sign_transaction(txn, private_key)
+        tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+        logger.info(f"Spice product added successfully. TX: {tx_hash.hex()}")
+        return {"tx_hash": tx_hash.hex(), "message": "Spice product registered successfully"}
+    except Exception as e:
+        logger.error(f"Error adding spice product: {str(e)}")
+        error_msg = str(e)
+        if "Product already exists" in error_msg:
+            raise HTTPException(status_code=400, detail="Product already exists")
+        raise HTTPException(status_code=500, detail=error_msg)
+
+@app.get("/verify/all")
 def get_all_products(user=Depends(get_current_user)):
-    """Get all products - this would need to be implemented in the smart contract"""
+    """Get all products from blockchain"""
     try:
         logger.info(f"Fetching all products for user: {user['username']}")
-        # Note: This would require a different smart contract implementation
-        # For now, return a message indicating this needs contract modification
-        return {"message": "This endpoint requires smart contract modification to track all products"}
+        product_ids = contract.functions.getAllProductIds().call()
+        products = []
+        
+        for product_id in product_ids:
+            try:
+                product_data = contract.functions.getProduct(product_id).call()
+                products.append({
+                    "id": product_id,
+                    "name": product_data[0],
+                    "batch": product_data[1],
+                    "manufacturer": product_data[2],
+                    "status": product_data[3],
+                    "timestamp": product_data[4],
+                    "turmeric_origin": product_data[5],
+                    "harvest_date": product_data[6]
+                })
+            except Exception as e:
+                logger.warning(f"Could not fetch product {product_id}: {str(e)}")
+                continue
+        
+        return {"products": products, "count": len(products)}
     except Exception as e:
-        logger.error(f"Error fetching products: {str(e)}")
+        logger.error(f"Error fetching all products: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/get-traces/{product_id}")
+def get_traces(product_id: str, user=Depends(get_current_user)):
+    """Get trace records for a product"""
+    try:
+        logger.info(f"Fetching traces for product: {product_id}")
+        traces = contract.functions.getTraceRecords(product_id).call()
+        
+        trace_data = []
+        for trace in traces:
+            trace_data.append({
+                "stage": trace[0],
+                "company": trace[1],
+                "location": trace[2],
+                "timestamp": trace[3]
+            })
+        
+        return {"traces": trace_data, "count": len(trace_data)}
+    except Exception as e:
+        logger.error(f"Error fetching traces for {product_id}: {str(e)}")
+        raise HTTPException(status_code=404, detail="Product not found or no traces available")

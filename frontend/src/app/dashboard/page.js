@@ -41,6 +41,7 @@ export default function Dashboard() {
     } catch (error) {
       localStorage.removeItem("token");
       window.location.href = "/login";
+      return;
     }
 
     fetchProducts();

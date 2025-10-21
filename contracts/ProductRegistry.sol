@@ -24,6 +24,8 @@ contract ProductRegistry {
     mapping(string => Product) public products;
     mapping(string => TraceRecord[]) public productTraces;
     mapping(string => uint256) public traceCount;
+    string[] public productIds;
+    uint256 public productCount;
 
     event ProductRegistered(string productId, string name, string manufacturer);
     event ProductStatusUpdated(string productId, string newStatus);
@@ -60,8 +62,65 @@ contract ProductRegistry {
             exists: true
         });
 
+        productIds.push(productId);
+        productCount++;
+
         emit ProductRegistered(productId, name, manufacturer);
     }
 
-    // Rest unchanged, but recompile/redeploy after this.
+    function getProduct(string memory productId) public view returns (
+        string memory name,
+        string memory batch,
+        string memory manufacturer,
+        string memory status,
+        uint256 timestamp,
+        string memory turmericOrigin,
+        uint256 harvestDate
+    ) {
+        require(products[productId].exists, "Product does not exist");
+        Product memory product = products[productId];
+        return (
+            product.name,
+            product.batch,
+            product.manufacturer,
+            product.status,
+            product.timestamp,
+            product.turmericOrigin,
+            product.harvestDate
+        );
+    }
+
+    function updateProductStatus(string memory productId, string memory newStatus) public productExists(productId) {
+        products[productId].status = newStatus;
+        emit ProductStatusUpdated(productId, newStatus);
+    }
+
+    function addTraceRecord(
+        string memory productId,
+        string memory stage,
+        string memory company,
+        string memory location
+    ) public productExists(productId) {
+        productTraces[productId].push(TraceRecord({
+            stage: stage,
+            company: company,
+            location: location,
+            timestamp: block.timestamp,
+            exists: true
+        }));
+        traceCount[productId]++;
+        emit TraceRecordAdded(productId, stage, company, location);
+    }
+
+    function getTraceRecords(string memory productId) public view productExists(productId) returns (TraceRecord[] memory) {
+        return productTraces[productId];
+    }
+
+    function getAllProductIds() public view returns (string[] memory) {
+        return productIds;
+    }
+
+    function getProductCount() public view returns (uint256) {
+        return productCount;
+    }
 }

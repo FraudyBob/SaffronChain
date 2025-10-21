@@ -12,6 +12,8 @@ export function AddProductForm({ onClose, onSuccess }) {
     name: "",
     batch: "",
     manufacturer: "",
+    turmeric_origin: "",
+    harvest_date: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -30,6 +32,11 @@ export function AddProductForm({ onClose, onSuccess }) {
         return;
       }
 
+      // Convert harvest date to Unix timestamp
+      const harvestTimestamp = form.harvest_date ? 
+        Math.floor(new Date(form.harvest_date).getTime() / 1000) : 
+        Math.floor(Date.now() / 1000);
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/add-spice`,
         {
@@ -38,7 +45,10 @@ export function AddProductForm({ onClose, onSuccess }) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(form),
+          body: JSON.stringify({
+            ...form,
+            harvest_date: harvestTimestamp
+          }),
         }
       );
 
@@ -46,7 +56,7 @@ export function AddProductForm({ onClose, onSuccess }) {
 
       if (response.ok) {
         toast.success(`Product registered successfully! TX: ${data.tx_hash.slice(0, 10)}...`);
-        setForm({ product_id: "", name: "", batch: "", manufacturer: "" });
+        setForm({ product_id: "", name: "", batch: "", manufacturer: "", turmeric_origin: "", harvest_date: "" });
         if (onSuccess) onSuccess(data);
         if (onClose) onClose();
       } else {
@@ -182,6 +192,38 @@ export function AddProductForm({ onClose, onSuccess }) {
                     </option>
                   ))}
                 </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="turmeric_origin" value="Turmeric Origin" />
+                <TextInput
+                  id="turmeric_origin"
+                  name="turmeric_origin"
+                  placeholder="e.g., Kerala, India"
+                  value={form.turmeric_origin}
+                  onChange={handleChange}
+                  required
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Location where the turmeric was sourced
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="harvest_date" value="Harvest Date" />
+                <TextInput
+                  id="harvest_date"
+                  name="harvest_date"
+                  type="date"
+                  value={form.harvest_date}
+                  onChange={handleChange}
+                  required
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Date when the turmeric was harvested
+                </p>
               </div>
             </div>
 

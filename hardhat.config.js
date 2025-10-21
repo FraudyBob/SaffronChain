@@ -1,7 +1,4 @@
 require("dotenv").config();
-console.log("PRIVATE_KEY:", process.env.PRIVATE_KEY);
-console.log("INFURA_API_KEY:", process.env.INFURA_API_KEY);
-console.log("CONTRACT_ADDRESS:", process.env.CONTRACT_ADDRESS);
 
 require("@nomiclabs/hardhat-ethers");
 

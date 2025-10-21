@@ -18,16 +18,39 @@ const Dashboard = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      // For now, we'll use mock data since the /products endpoint needs smart contract modification
-      // In a real implementation, you'd call: const response = await axios.get('/products');
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Please login first");
+        return;
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/verify/all`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data.products || []);
+      } else {
+        // Fallback to mock data if API fails
+        setProducts([
+          { id: 'TUR001', name: 'Premium Turmeric Powder', turmeric_origin: 'Kerala, India', status: 'Farm', manufacturer: 'SpiceCo' },
+          { id: 'TUR002', name: 'Organic Turmeric Root', turmeric_origin: 'Tamil Nadu, India', status: 'Factory', manufacturer: 'OrganicSpices' },
+          { id: 'TUR003', name: 'Golden Turmeric Extract', turmeric_origin: 'Andhra Pradesh, India', status: 'Store', manufacturer: 'GoldenSpices' }
+        ]);
+      }
+    } catch (err) {
+      setError('Failed to fetch products');
+      console.error('Error fetching products:', err);
+      // Fallback to mock data
       setProducts([
         { id: 'TUR001', name: 'Premium Turmeric Powder', turmeric_origin: 'Kerala, India', status: 'Farm', manufacturer: 'SpiceCo' },
         { id: 'TUR002', name: 'Organic Turmeric Root', turmeric_origin: 'Tamil Nadu, India', status: 'Factory', manufacturer: 'OrganicSpices' },
         { id: 'TUR003', name: 'Golden Turmeric Extract', turmeric_origin: 'Andhra Pradesh, India', status: 'Store', manufacturer: 'GoldenSpices' }
       ]);
-    } catch (err) {
-      setError('Failed to fetch products');
-      console.error('Error fetching products:', err);
     } finally {
       setLoading(false);
     }
@@ -125,9 +148,9 @@ const Dashboard = () => {
             <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
               {products.map(product => (
                 <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-mono">{JSON.stringify(product.id)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{JSON.stringify(product.name)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{JSON.stringify(product.turmeric_origin)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-mono">{product.id}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{product.name}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{product.turmeric_origin}</td>
                   <td className="px-4 py-3 text-sm">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                       product.status === 'Farm' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' :
@@ -137,7 +160,7 @@ const Dashboard = () => {
                       {product.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{JSON.stringify(product.manufacturer)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{product.manufacturer}</td>
                 </tr>
               ))}
             </tbody>

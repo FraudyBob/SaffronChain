@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -27,19 +27,59 @@ ChartJS.register(
 
 export function TimelineChart({ products }) {
   const chartRef = useRef();
+  const [traces, setTraces] = useState([]);
 
-  // Create timeline data based on product status
+  // Fetch traces for all products
+  useEffect(() => {
+    const fetchTraces = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const tracePromises = products.map(async (product) => {
+          try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/get-traces/${product.id}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              return { productId: product.id, traces: data.traces || [] };
+            }
+            return { productId: product.id, traces: [] };
+          } catch (error) {
+            console.error(`Error fetching traces for ${product.id}:`, error);
+            return { productId: product.id, traces: [] };
+          }
+        });
+
+        const traceResults = await Promise.all(tracePromises);
+        setTraces(traceResults);
+      } catch (error) {
+        console.error("Error fetching traces:", error);
+      }
+    };
+
+    if (products.length > 0) {
+      fetchTraces();
+    }
+  }, [products]);
+
+  // Create timeline data based on product status and traces
   const timelineData = {
     labels: ["Farm", "Processing", "Factory", "Packaging", "Store"],
     datasets: [
       {
         label: "Products in Stage",
         data: [
-          products.filter(p => p.status === "Created").length,
+          products.filter(p => p.status === "Created" || p.status === "Farm").length,
           products.filter(p => p.status === "Processing").length,
-          products.filter(p => p.status === "In Transit").length,
+          products.filter(p => p.status === "Factory").length,
           products.filter(p => p.status === "Processing").length,
-          products.filter(p => p.status === "Delivered").length,
+          products.filter(p => p.status === "Delivered" || p.status === "Store").length,
         ],
         borderColor: "rgb(59, 130, 246)",
         backgroundColor: "rgba(59, 130, 246, 0.1)",
@@ -53,7 +93,7 @@ export function TimelineChart({ products }) {
       },
       {
         label: "Trace Records",
-        data: products.map(p => p.traces),
+        data: traces.map(t => t.traces.length),
         borderColor: "rgb(168, 85, 247)",
         backgroundColor: "rgba(168, 85, 247, 0.1)",
         tension: 0.4,
