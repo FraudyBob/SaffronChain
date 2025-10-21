@@ -56,7 +56,7 @@ A modern, secure, and transparent supply chain tracking system built with blockc
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/BinhMinh04/DevSecOps_Blockchain_App.git
+git git clone https://github.com/FraudyBob/SpiceChainTracker.git
 cd DevSecOps_Blockchain_App
 ```
 
