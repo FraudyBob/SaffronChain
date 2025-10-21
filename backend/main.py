@@ -1,18 +1,38 @@
 import os
 import json
 import jwt
+import logging
+import qrcode
+import io
+import base64
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.security import OAuth2PasswordBearer
-from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 from passlib.context import CryptContext
 from dotenv import load_dotenv, find_dotenv
 from web3 import Web3
+from typing import Optional, List
 
 # Load env
 load_dotenv(find_dotenv())
 
-app = FastAPI()
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="Supply Chain Tracker API", version="1.0.0")
+
+
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins=["http://localhost:3000"],
+  allow_credentials=True,
+  allow_methods=["*"],
+  allow_headers=["*"],
+)
 
 # Blockchain setup
 w3 = Web3(Web3.HTTPProvider(f"https://sepolia.infura.io/v3/{os.getenv('INFURA_API_KEY')}"))
@@ -29,7 +49,7 @@ contract = w3.eth.contract(address=contract_address, abi=abi)
 SECRET_KEY = os.getenv("SECRET_KEY", "secret")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Fake DB
@@ -56,14 +76,49 @@ fake_users_db = {
     },
 }
 
-# Models
+# Pydantic Models
 class User(BaseModel):
-    email: str
-    password: str
+    email: str = Field(..., description="User email address")
+    password: str = Field(..., min_length=6, description="User password")
+
+class UserResponse(BaseModel):
+    access_token: str
+    token_type: str
+    role: str
+
+class ProductRegistration(BaseModel):
+    product_id: str = Field(..., description="Unique product identifier")
+    name: str = Field(..., description="Product name")
+    batch: str = Field(..., description="Batch number")
+    manufacturer: str = Field(..., description="Manufacturer name")
+    turmeric_origin: str = Field(..., description="Turmeric origin location")
+    harvest_date: int = Field(..., description="Harvest date as Unix timestamp")
+
+class ProductResponse(BaseModel):
+    name: str
+    batch: str
+    manufacturer: str
+    status: str
+    timestamp: int
 
 class UpdateStatusRequest(BaseModel):
+    product_id: str = Field(..., description="Product ID to update")
+    status: str = Field(..., description="New status")
+
+class TraceRecord(BaseModel):
+    product_id: str = Field(..., description="Product ID")
+    stage: str = Field(..., description="Supply chain stage")
+    company: str = Field(..., description="Company name")
+    location: str = Field(..., description="Location")
+
+class QRCodeRequest(BaseModel):
+    product_id: str = Field(..., description="Product ID for QR code")
+    frontend_url: str = Field(default="http://localhost:3000", description="Frontend URL")
+
+class QRCodeResponse(BaseModel):
+    qr_code_data: str
     product_id: str
-    status: str
+    verify_url: str
 
 # Auth utils
 def verify_password(plain_password, hashed_password):
@@ -106,25 +161,36 @@ def login(user: User):
     access_token = create_access_token(data={"sub": db_user["username"], "role": db_user["role"]})
     return {"access_token": access_token, "token_type": "bearer", "role": db_user["role"]}
 
-@app.get("/verify/{product_id}")
+@app.get("/verify/{product_id}", response_model=ProductResponse)
 def verify_product(product_id: str, user=Depends(get_current_user)):
     try:
+        logger.info(f"Verifying product: {product_id} for user: {user['username']}")
         product = contract.functions.getProduct(product_id).call()
-        return {
-            "name": product[0],
-            "batch": product[1],
-            "manufacturer": product[2],
-            "status": product[3],
-            "timestamp": product[4]
-        }
-    except Exception:
+        logger.info(f"Product found: {product[0]}")
+        return ProductResponse(
+            name=product[0],
+            batch=product[1],
+            manufacturer=product[2],
+            status=product[3],
+            timestamp=product[4]
+        )
+    except Exception as e:
+        logger.error(f"Error verifying product {product_id}: {str(e)}")
         raise HTTPException(status_code=404, detail="Product not found")
 
 @app.post("/register-product")
-def register_product(product_id: str, name: str, batch: str, manufacturer: str, user=Depends(get_current_user)):
+def register_product(product: ProductRegistration, user=Depends(get_current_user)):
     try:
+        logger.info(f"Registering product: {product.product_id} by user: {user['username']}")
         nonce = w3.eth.get_transaction_count(account.address)
-        txn = contract.functions.registerProduct(product_id, name, batch, manufacturer).build_transaction({
+        txn = contract.functions.registerProduct(
+            product.product_id, 
+            product.name, 
+            product.batch, 
+            product.manufacturer,
+            product.turmeric_origin,
+            product.harvest_date
+        ).build_transaction({
             'chainId': 11155111,
             'gas': 300000,
             'gasPrice': w3.eth.gas_price,
@@ -132,14 +198,22 @@ def register_product(product_id: str, name: str, batch: str, manufacturer: str, 
         })
 
         signed_txn = w3.eth.account.sign_transaction(txn, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
-        return {"tx_hash": tx_hash.hex()}
+        tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+        logger.info(f"Product registered successfully. TX: {tx_hash.hex()}")
+        return {"tx_hash": tx_hash.hex(), "message": "Product registered successfully"}
     except Exception as e:
+        logger.error(f"Error registering product: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/add-spice")
+def add_spice(product: ProductRegistration, user=Depends(get_current_user)):
+    """Alias for register-product specifically for spices"""
+    return register_product(product, user)
 
 @app.post("/update-status")
 def update_status(req: UpdateStatusRequest, user=Depends(get_current_user)):
     try:
+        logger.info(f"Updating status for product: {req.product_id} to {req.status} by user: {user['username']}")
         nonce = w3.eth.get_transaction_count(account.address)
         txn = contract.functions.updateProductStatus(req.product_id, req.status).build_transaction({
             'chainId': 11155111,
@@ -149,7 +223,77 @@ def update_status(req: UpdateStatusRequest, user=Depends(get_current_user)):
         })
 
         signed_txn = w3.eth.account.sign_transaction(txn, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
-        return {"tx_hash": tx_hash.hex()}
+        tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+        logger.info(f"Status updated successfully. TX: {tx_hash.hex()}")
+        return {"tx_hash": tx_hash.hex(), "message": "Status updated successfully"}
     except Exception as e:
+        logger.error(f"Error updating status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/add-trace")
+def add_trace(trace: TraceRecord, user=Depends(get_current_user)):
+    try:
+        logger.info(f"Adding trace for product: {trace.product_id} at stage: {trace.stage}")
+        nonce = w3.eth.get_transaction_count(account.address)
+        txn = contract.functions.addTraceRecord(
+            trace.product_id,
+            trace.stage,
+            trace.company,
+            trace.location
+        ).build_transaction({
+            'chainId': 11155111,
+            'gas': 300000,
+            'gasPrice': w3.eth.gas_price,
+            'nonce': nonce
+        })
+
+        signed_txn = w3.eth.account.sign_transaction(txn, private_key)
+        tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+        logger.info(f"Trace added successfully. TX: {tx_hash.hex()}")
+        return {"tx_hash": tx_hash.hex(), "message": "Trace record added successfully"}
+    except Exception as e:
+        logger.error(f"Error adding trace: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/generate-qr", response_model=QRCodeResponse)
+def generate_qr(request: QRCodeRequest, user=Depends(get_current_user)):
+    try:
+        logger.info(f"Generating QR code for product: {request.product_id}")
+        
+        # Create verify URL
+        verify_url = f"{request.frontend_url}/verify-product?product_id={request.product_id}"
+        
+        # Generate QR code
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(verify_url)
+        qr.make(fit=True)
+        
+        # Create image
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Convert to base64
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        img_str = base64.b64encode(buffer.getvalue()).decode()
+        
+        logger.info(f"QR code generated successfully for product: {request.product_id}")
+        return QRCodeResponse(
+            qr_code_data=img_str,
+            product_id=request.product_id,
+            verify_url=verify_url
+        )
+    except Exception as e:
+        logger.error(f"Error generating QR code: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/products")
+def get_all_products(user=Depends(get_current_user)):
+    """Get all products - this would need to be implemented in the smart contract"""
+    try:
+        logger.info(f"Fetching all products for user: {user['username']}")
+        # Note: This would require a different smart contract implementation
+        # For now, return a message indicating this needs contract modification
+        return {"message": "This endpoint requires smart contract modification to track all products"}
+    except Exception as e:
+        logger.error(f"Error fetching products: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -30,3 +30,12 @@ Thumbs.db
 *.txt
 DevSecOps_Blockchain_App.code-workspace
 
+
+
+touch .gitignore
+echo "node_modules/
+backend/__pycache__/
+.env
+cache/
+artifacts/
+backend/artifacts/" > .gitignore

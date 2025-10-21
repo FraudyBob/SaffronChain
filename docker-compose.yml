@@ -12,6 +12,8 @@ services:
     volumes:
       - ./backend:/app
     restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
 
   frontend:
     build:
@@ -23,5 +25,8 @@ services:
       - backend
     volumes:
       - ./frontend:/app
+      - /app/node_modules
     restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
 
