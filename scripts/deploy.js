@@ -1,16 +1,15 @@
-const hre = require("hardhat");
-
 async function main() {
-  console.log("Deploying to Sepolia...");
+  const [deployer] = await ethers.getSigners();
+  console.log("Deploying with:", deployer.address);
 
-  const ProductRegistry = await hre.ethers.getContractFactory("ProductRegistry");
+  const ProductRegistry = await ethers.getContractFactory("ProductRegistry");
   const registry = await ProductRegistry.deploy();
-
   await registry.deployed();
-  console.log("✅ Contract deployed to:", registry.address);
+
+  console.log("✅ ProductRegistry deployed to:", registry.address);
 }
 
-main().catch((error) => {
+main().then(() => process.exit(0)).catch((error) => {
   console.error(error);
-  process.exitCode = 1;
+  process.exit(1);
 });

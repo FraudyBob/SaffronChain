@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+web3
+python-dotenv
+pydantic
+requests
+PyJWT
+passlib[bcrypt]
+passlib[argon2]
+qrcode[pil]
+Pillow
+pytest

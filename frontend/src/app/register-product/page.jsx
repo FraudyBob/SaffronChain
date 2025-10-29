@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Package, ArrowLeft } from "lucide-react";
 import { Button, Card } from "flowbite-react";
-import { AddProductForm } from "../components/AddProductForm";
+import AddProductForm from "@/app/dashboard/components/AddProductForm";
 import Link from "next/link";
 import toast from "react-hot-toast";
 

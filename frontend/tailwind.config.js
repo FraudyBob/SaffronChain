@@ -5,13 +5,29 @@ module.exports = {
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/flowbite-react/lib/**/*.js",
+    "./node_modules/flowbite-react/**/*.{js,jsx,ts,tsx}",
     "./node_modules/flowbite/**/*.js"
   ],
   darkMode: 'class',
   theme: {
     extend: {
       colors: {
+        // Earthy saffron-gold palette
+        accent: {
+          50: '#FFF8E6',
+          100: '#FDECC8',
+          200: '#F8DB96',
+          300: '#F3C766',
+          400: '#E8AE3A',
+          500: '#D4A017',
+          600: '#B38310',
+          700: '#8C660C',
+          800: '#6B4F0A',
+          900: '#4E3A07',
+          950: '#2C2204',
+          DEFAULT: '#D4A017',
+        },
+        accentHover: '#E8AE3A',
         primary: {
           50: '#eff6ff',
           100: '#dbeafe',
