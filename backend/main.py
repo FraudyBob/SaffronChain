@@ -37,25 +37,51 @@ app = FastAPI(title="Supply Chain Tracker API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:8000"],
+    allow_origins=["*"]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Blockchain setup
-w3 = Web3(Web3.HTTPProvider(f"https://sepolia.infura.io/v3/{os.getenv('INFURA_API_KEY')}"))
-if not w3.is_connected():
-    raise Exception("❌ Web3 not connected! Check INFURA_API_KEY or network settings.")
-else:
-    logger.info("✅ Connected to Sepolia network successfully.")
+# Blockchain setup (safe production version)
 
-private_key = os.getenv("PRIVATE_KEY")
-account = w3.eth.account.from_key(private_key)
-contract_address = os.getenv("CONTRACT_ADDRESS")
-with open("artifacts/contracts/ProductRegistry.sol/ProductRegistry.json") as f:
-    abi = json.load(f)["abi"]
-contract = w3.eth.contract(address=contract_address, abi=abi)
+w3 = None
+contract = None
+account = None
+
+def init_web3():
+    global w3, contract, account
+
+    if w3 is not None:
+        return
+
+    infura_key = os.getenv("INFURA_API_KEY")
+    private_key = os.getenv("PRIVATE_KEY")
+    contract_address = os.getenv("CONTRACT_ADDRESS")
+
+    if not infura_key or not private_key or not contract_address:
+        logger.warning("Blockchain environment variables missing.")
+        return
+
+    try:
+        provider_url = f"https://sepolia.infura.io/v3/{infura_key}"
+        w3 = Web3(Web3.HTTPProvider(provider_url))
+
+        if not w3.is_connected():
+            logger.error("Web3 not connected.")
+            return
+
+        account = w3.eth.account.from_key(private_key)
+
+        with open("artifacts/contracts/ProductRegistry.sol/ProductRegistry.json") as f:
+            abi = json.load(f)["abi"]
+
+        contract = w3.eth.contract(address=contract_address, abi=abi)
+
+        logger.info("Connected to Sepolia successfully.")
+
+    except Exception as e:
+        logger.error(f"Blockchain initialization failed: {e}")
 
 # SQLite setup
 DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "products.db"))
