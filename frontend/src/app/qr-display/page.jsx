@@ -1,7 +1,7 @@
 "use client";
 
-import { QRDisplay } from "@/app/components/QRDisplay";
+import QRModal from "@/app/components/QRModal";
 
 export default function QRPage({ params }) {
-  return <QRDisplay productId={params.id} />;
+  return <QRModal productId={params.id} />;
 }
